@@ -17,6 +17,27 @@ The pipeline consists of the following components:
 - **Prometheus & Grafana**: Monitoring and visualization of pipeline metrics
 
 
+## Diagram
+See online version [here](https://excalidraw.com/#json=y8mmSVf9XIH5SS1MlDyM_,EPl9tRpi7wY49rf1UwQqYw)
+![alt text](assets/diagram.png)
+
+## Features
+
+- **Event Capture**: Listens for Uniswap V3 pool events directly from the Ethereum blockchain
+- **Configurable Pool Monitoring**: Easily add or remove pools to monitor via configuration
+- **Monitoring**: Prometheus metrics and Grafana dashboards for system monitoring
+- **Fault Tolerance**: Automatic recovery from failures and message redelivery
+
+## Design Notes
+- Listener: all messages are included with metadata in headers (`block_number`, `block_timestamp`, `pool_address`). This helps 
+    - Avoid unnecessary deserialization of event data. These metadatas are useful for debugging and more performant in processing messages by order.
+- Consumer: manual ACK of kafka messages, in order to ensure that all events are processed and stored in the database. After persisting the event in the database, the consumer will send ACK for all messages in that batch.
+    - update env `BATCH_SIZE` or `BATCH_TIMEOUT` to control the batch size and timeout for current batch.
+    - This design avoid hitting DB for every single event. Moreover, this can help to dealing with Blockchain Reorg by delaying after a checkpoint interval (aka `BATCH_TIMEOUT`) to ensure that block is confirmed.
+- Everything design with all or nothing in mind. So if application is failed, pipeline can always replay from the last checkpoint and ensure data consistency.
+
+
+
 ## Project Structure
 
 ```
@@ -41,23 +62,6 @@ uniswap-v3-event-pipeline/
 └── README.md                    # This file
 
 ```
-
-
-## Features
-
-- **Event Capture**: Listens for Uniswap V3 pool events directly from the Ethereum blockchain
-- **Configurable Pool Monitoring**: Easily add or remove pools to monitor via configuration
-- **Monitoring**: Prometheus metrics and Grafana dashboards for system monitoring
-- **Fault Tolerance**: Automatic recovery from failures and message redelivery
-
-## Design Notes
-- Listener: all messages are included with metadata in headers (`block_number`, `block_timestamp`, `pool_address`). This helps 
-    - Avoid unnecessary deserialization of event data. These metadatas are useful for debugging and more performant in processing messages by order.
-- Consumer: manual ACK of kafka messages, in order to ensure that all events are processed and stored in the database. After persisting the event in the database, the consumer will send ACK for all messages in that batch.
-    - update env `BATCH_SIZE` or `BATCH_TIMEOUT` to control the batch size and timeout for current batch.
-    - This design avoid hitting DB for every single event. Moreover, this can help to dealing with Blockchain Reorg by delaying after a checkpoint interval (aka `BATCH_TIMEOUT`) to ensure that block is confirmed.
-- Everything design with all or nothing in mind. So if application is failed, pipeline can always replay from the last checkpoint and ensure data consistency.
-
 
 
 ## Getting Started
