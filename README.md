@@ -131,5 +131,6 @@ Default capturing event is Swap with this schema. (Schema are generated dynamica
 Attached SQL dump file for TimescaleDB at `dump/swap.sql`.
 
 ## Further improvements
-- Tuning interval speed of listener
+- Tuning interval speed of listener: currently running in synchronous mode, and any other calls will blocked. Turn in into async model.
 - The listener polling speed is limited by the Ethereum node, consider using WSS.
+- Add more metrics for monitoring and alerting.
