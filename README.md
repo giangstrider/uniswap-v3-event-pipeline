@@ -48,18 +48,21 @@ uniswap-v3-event-pipeline/
 │   └── pool_config.json         # Configuration for pools to monitor
 ├── consumer/
 │   ├── Dockerfile               # Dockerfile for the consumer service
-│   ├── database_client.py       # Database interaction layer
+│   ├── database_client.py       # Database interaction layer - create and persist data
 │   ├── main.py                  # Entry point for consumer service
-│   ├── message_consumer.py      # Kafka consumer implementation
-│   ├── message_processor.py     # Event processing logic
+│   ├── message_consumer.py      # Kafka consumer implementation - consume by BATCH
+│   ├── message_processor.py     # Event processing logic - Parse message and categorize data
 │   └── requirements.txt         # Python dependencies
 ├── listener/
 │   ├── Dockerfile               # Dockerfile for the listener service
-│   ├── event_handler.py         # Event handling logic
-│   ├── event_listener.py        # Event listening logic
+│   ├── event_handler.py         # Event handling - Parse data and send to Kafka
+│   ├── event_listener.py        # Event listening - Listen events by config
+│   ├── metrics.py               # Metrics Definition
+│   ├── message_producer.py      # Message producer for Kafka
+│   ├── web3_client.py           # Web3 client for Ethereum node
 │   └── requirements.txt         # Python dependencies
 ├── docker-compose.yml           # Docker Compose file for the pipeline
-└── README.md                    # This file
+└── README.md
 
 ```
 
