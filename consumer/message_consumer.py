@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Tuple
 from kafka import KafkaConsumer
 from kafka.structs import TopicPartition, OffsetAndMetadata
 from message_processor import MessageProcessor
+from metrics import MESSAGES_CONSUMED, ERROR_COUNT
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,9 @@ class MessageConsumer:
                             for message in messages:
                                 topic = tp.topic
                                 
+                                # Track message consumption metrics
+                                MESSAGES_CONSUMED.labels(topic=topic).inc()
+                                
                                 if topic not in message_batch:
                                     message_batch[topic] = []
                                 message_batch[topic].append(message.value)
@@ -107,7 +111,7 @@ class MessageConsumer:
                     
                     # Process the batch if we have any messages
                     if message_batch:
-                        logger.info(f"Processing batch of {len(message_batch)} topics")
+                        logger.info(f"Processing batch of {sum(len(msgs) for msgs in message_batch.values())} messages across {len(message_batch)} topics")
                         success = self.processor.process_message_batch(message_batch)
                         
                         if success:
@@ -120,6 +124,7 @@ class MessageConsumer:
                     
                 except Exception as e:
                     logger.error(f"Error in batch processing: {e}")
+                    ERROR_COUNT.labels(error_type=type(e).__name__).inc()
                     raise e
         
         finally:
@@ -138,6 +143,7 @@ class MessageConsumer:
                 logger.info("Kafka consumer closed")
             except Exception as e:
                 logger.error(f"Error closing Kafka consumer: {e}")
+                ERROR_COUNT.labels(error_type=type(e).__name__).inc()
     
     def request_shutdown(self) -> None:
         """

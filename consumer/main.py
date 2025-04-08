@@ -8,6 +8,7 @@ from database_client import DatabaseClient
 from message_processor import MessageProcessor
 from message_consumer import MessageConsumer
 from typing import Dict, List
+from metrics import start_metrics_server, ACTIVE
 
 # Configure logging
 logging.basicConfig(
@@ -66,7 +67,6 @@ def main() -> None:
     """Main entry point for the consumer service."""
     global consumer, db_client
 
-    
     # Register signal handlers for graceful shutdown
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
@@ -80,6 +80,12 @@ def main() -> None:
     # Batch configuration
     batch_size = int(os.environ.get('BATCH_SIZE', '100'))
     batch_timeout = float(os.environ.get('BATCH_TIMEOUT', '5.0'))
+    
+    # Metrics port
+    metrics_port = int(os.environ.get('METRICS_PORT', '8002'))
+    
+    # Start the metrics server
+    start_metrics_server(metrics_port)
 
     # Load ABI for table creation
     abi_dir = os.environ.get('ABI_DIR', 'abi')

@@ -97,7 +97,11 @@ services:
       # Configuration file path
       CONFIG_FILE: ${CONFIG_FILE:-config/pool_config.json}
       ABI_DIR: ${ABI_DIR:-config/abi}
+      # Metrics port
+      METRICS_PORT: ${METRICS_PORT:-8001}
       # ETH_RPC_URL must be in .env
+    ports:
+      - "8001:8001" # Expose Prometheus metrics port
     volumes:
       - ./config:/app/config
     restart: unless-stopped
@@ -150,7 +154,7 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:10.4.2 # Use a specific version
+    image: grafana/grafana:10.4.2
     container_name: grafana
     networks:
       - uniswap-v3-event-pipeline
@@ -158,20 +162,23 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      # Optional: Mount provisioning files for datasources/dashboards
-      # - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-      # - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      # Add a provisioning directory for proper datasource configuration
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     environment:
-      # Optionally configure admin user/password or enable anonymous access
+      # Remove these environment variables as they don't correctly configure datasources
+      # GF_DATASOURCES_DEFAULT_NAME: Prometheus
+      # GF_DATASOURCES_0_NAME: Prometheus  
+      # GF_DATASOURCES_0_TYPE: prometheus
+      # GF_DATASOURCES_0_URL: http://prometheus:9090
+      # GF_DATASOURCES_0_ISDEFAULT: "true"
+      # Keep these authentication settings
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
-      # Set Prometheus as a datasource (example, adjust URL)
-      GF_DATASOURCES_DEFAULT_NAME: Prometheus
-      GF_DATASOURCES_0_NAME: Prometheus
-      GF_DATASOURCES_0_TYPE: prometheus
-      GF_DATASOURCES_0_URL: http://prometheus:9090
-      GF_DATASOURCES_0_ISDEFAULT: "true"
+      # Add this to make Grafana accessible from outside
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ROOT_URL: "http://localhost:3000"
     depends_on:
       - prometheus
     restart: unless-stopped

@@ -7,6 +7,7 @@ from web3_client import Web3Client
 from event_producer import EventProducer
 from event_handler import EventHandler
 from event_listener import EventListener
+from metrics import start_metrics_server
 
 # Configure logging
 logging.basicConfig(
@@ -20,6 +21,10 @@ def main() -> None:
     kafka_brokers: str = os.environ.get('KAFKA_BROKERS', 'kafka:9092')
     config_file: str = os.environ.get('CONFIG_FILE', 'config/pool_config.json')
     abi_dir: str = 'abi'
+    metrics_port: int = int(os.environ.get('METRICS_PORT', '8001'))
+    
+    # Start metrics server
+    start_metrics_server(metrics_port)
     
     # Create clients
     config_loader = ConfigLoader(config_file=config_file, abi_dir=abi_dir)

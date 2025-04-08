@@ -1,0 +1,46 @@
+# ./prometheus/prometheus.yml
+# Basic Prometheus configuration for the Uniswap V3 Event Pipeline
+# Generated at 11:59 AM AEST, April 8, 2025, Docklands, VIC
+
+global:
+  scrape_interval:     15s # How frequently to scrape targets by default
+  evaluation_interval: 15s # How frequently to evaluate rules
+
+# Alerting settings (optional, can be added later)
+# alerting:
+#   alertmanagers:
+#   - static_configs:
+#     - targets:
+#       # - alertmanager:9093
+
+# Rule files (optional, can be added later)
+# rule_files:
+#   # - "first_rules.yml"
+#   # - "second_rules.yml"
+
+# A list of scrape configurations.
+scrape_configs:
+  # Job to scrape the Listener service metrics
+  - job_name: 'listener'
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      # Target the 'listener' service (defined in docker-compose) on port 8001
+      - targets: ['listener:8001']
+
+  # Job to scrape the Saver service metrics
+  - job_name: 'saver'
+    static_configs:
+      # Target the 'saver' service (defined in docker-compose) on port 8002
+      - targets: ['saver:8002']
+
+  # Job to scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      # Target Prometheus running on localhost within its own container context
+      - targets: ['localhost:9090']
+
+  # Job to scrape the Consumer service metrics (called 'saver' in your config)
+  - job_name: 'consumer'  # You might want to rename this from 'saver'
+    static_configs:
+      - targets: ['consumer:8002']  # Make sure this matches your container name

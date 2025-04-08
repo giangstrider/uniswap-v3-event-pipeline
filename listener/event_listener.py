@@ -8,6 +8,7 @@ from web3.types import FilterParams
 from config_loader import ConfigLoader
 from web3_client import Web3Client
 from event_handler import EventHandler
+from metrics import MESSAGES_POLLED, ERROR_COUNT
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +95,9 @@ class EventListener:
                             event_data['timestamp'] = block['timestamp']
                             event_data['transactionHash'] = event_data['transactionHash'].hex()
 
+                            # Increment polled messages counter
+                            MESSAGES_POLLED.labels(pool_address=pool_address, pool_name=pool_name).inc()
+
                             self.event_handler.handle_event(event_data, pool_address, pool_name)
                 
                 # Small delay to prevent excessive polling
@@ -101,4 +105,6 @@ class EventListener:
             except Exception as e:
                 logger.error(f"Error processing events: {e}")
                 logger.error(traceback.format_exc())
+                # Increment error counter
+                ERROR_COUNT.labels(error_type=type(e).__name__).inc()
                 time.sleep(1) 
