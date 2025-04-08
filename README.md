@@ -7,14 +7,14 @@ This project provides a complete data pipeline for monitoring Uniswap V3 pool ev
 
 ## Architecture
 The pipeline consists of the following components:
-**Listener Service (Python)**: Connects to Ethereum nodes, listens for Uniswap V3 pool events, and publishes them to Kafka topics
-**Consumer Service (Python)**: Consumes events from Kafka, processes them, and stores them in TimescaleDB
-**TimescaleDB**: Time-series database for efficient storage and querying of event data. Key design:
+- **Listener Service (Python)**: Connects to Ethereum nodes, listens for Uniswap V3 pool events, and publishes them to Kafka topics
+- **Consumer Service (Python)**: Consumes events from Kafka, processes them, and stores them in TimescaleDB
+- **TimescaleDB**: Time-series database for efficient storage and querying of event data. Key design:
     - Since events are organized by block number and timestamp, it's easy to query by time range.
     - Sequential event processing: Trades occur in a strict time sequence
     - Time-based analysis: Most analytics involve time ranges (hourly/daily volume, price movements)
-**Kafka**: Message broker for reliable event streaming between components
-**Prometheus & Grafana**: Monitoring and visualization of pipeline metrics
+- **Kafka**: Message broker for reliable event streaming between components
+- **Prometheus & Grafana**: Monitoring and visualization of pipeline metrics
 
 
 ## Project Structure
@@ -117,8 +117,11 @@ See more dashboards in `assets`.
 Connect your database client on http://localhost:5432 with credentials in `.env` file.
 Default capturing event is Swap with this schema. (Schema are generated dynamically based on the ABI of the event)
 
-Sample data
+### Sample data
 ![alt text](assets/swap_sample_data.png)
+
+### Data Dump
+Attached SQL dump file for TimescaleDB at `dump/swap.sql`.
 
 ## Further improvements
 - Tuning interval speed of listener
